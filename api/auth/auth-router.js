@@ -63,6 +63,25 @@ router.post('/register', async (req, res, next) => {
   }
  */
 
+  router.post('/login', async (req, res, next) => {
+    try {
+      const { username, password } = req.body
+      const [userFromDb] = await User.findBy( {username} )
+      if (!userFromDb) {
+        return next({ message: 'invalid credentials', status: 401 })
+      }
+      const verifies = bcrypt.compareSync(password, userFromDb.password)
+      if(!verifies) {
+        return next({ message: 'invalid credentials', status: 401 })
+      }
+      req.session.user = userFromDb
+      res.json({
+        message: ` Welcome ${username}!`
+      })
+    } catch (err) {
+        next(err)
+    }
+  })
 
 /**
   3 [GET] /api/auth/logout
